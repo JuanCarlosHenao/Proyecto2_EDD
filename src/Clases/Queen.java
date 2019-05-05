@@ -5,7 +5,7 @@ public class Queen {
 	private static int k = 1; 
 
 	static void imprimir(int tablero[][]) {  
-		System.out.println(" Solución " + k++); //Imprime en cual solucion esta mostrando
+		System.out.println(" Solución " + k++); //Imprime cual solucion esta mostrando
 		System.out.println(""); 
 		for (int i = 0; i < N; i++) {  //Imprime el tablero
 			for (int j = 0; j < N; j++)  
