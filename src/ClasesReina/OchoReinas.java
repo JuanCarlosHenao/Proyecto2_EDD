@@ -1,4 +1,4 @@
-package Clases;
+package ClasesReina;
 
 
 public class OchoReinas {
