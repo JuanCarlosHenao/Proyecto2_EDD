@@ -27,6 +27,22 @@ public class GuardaSerieJuanca {
 	
 	
 	
+	 //fibonacci recursivo optimizado
+	   
+	   public static long fibonacciFast(int n ) {
+		   int actual=(n==0)?0:1;
+		   return fibonacciFastR(n,0,actual);
+		   
+	   }
+	private static long fibonacciFastR(int n, long anterior, long actual) {
+		if(n<=1) 
+			return actual;
+		return fibonacciFastR(n-1,actual,actual+anterior);
+	
+	}
+	
+	
+	
 	public GuardaSerieJuanca(int terminoN) {
 		
 		imprimirArbol(crearArbol(terminoN));

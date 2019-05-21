@@ -28,6 +28,12 @@ public class NodoB<E extends Comparable <E>> {
 	 
 
 
+	public NodoB() {
+		// TODO Auto-generated constructor stub
+	}
+
+
+
 	public E getLlave() {
 		return llave;
 	}
