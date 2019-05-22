@@ -8,10 +8,6 @@ import java.util.Queue;
 import java.util.Spliterator;
 import java.util.Stack;
 
-
-
-
-
 public class ArbolB <E extends Comparable <E>> {
 	protected NodoB<E> raiz;
 	
@@ -88,94 +84,105 @@ public class ArbolB <E extends Comparable <E>> {
 		}
 	}
 	
-	public String decode(String message) {
-	    String[] morseSymbols = message.split(" "); // separa el mensaje por palabras de signos 
-	    String decodedMessage = ""; // ´para iniciar el mensaje en blanco 
+	
+	/*
+	 * decodificar(), recibe un mensaje en morse y lo pasa a letras
+	 */
+	
+	public String decodificar(String mensaje) {
+		//Guarda cada palabra del mensaje en una posicion del vector, separa por espacios
+	    String[] mensajeArray = mensaje.split(" "); 
+	    String mensajeDecodificado = ""; // ´para iniciar el mensaje en blanco 
 
-	    for (int k = 0; k < morseSymbols.length; k++) {// la cantidad de palabras 
-	      NodoB<E> currentNode = this.raiz;
-	      String morseSymbol = morseSymbols[k];// la primera palabra de signos 
+	    for (int k = 0; k < mensajeArray.length; k++) {//Recorre el mensaje palabra por palabra
+	      NodoB<E> nodoActual = this.raiz;
+	      String palabra = mensajeArray[k]; // la primera palabra en simbolos 
 
-	      if (morseSymbol.equals("")) {// si la primera palabra es vacia
-	        decodedMessage += " ";
+	      if (palabra.equals("")) { // si la primera palabra es vacia
+	    	  mensajeDecodificado += " ";
 	      }
 
-	      for (int l = 0; l < morseSymbol.length(); l++) {// para recorrer la palabra de signos 
-	        char singleChar = morseSymbol.charAt(l);// coge el primer caracter
+	      for (int l = 0; l < palabra.length(); l++) {//Recorre cada palabra caracter por caracter
+	        char caracter = palabra.charAt(l); // coge el primer caracter
 
-	        if (currentNode.getHijoIzq() == null && currentNode.getHijoDer() == null) {
+	        if (nodoActual.getHijoIzq() == null && nodoActual.getHijoDer() == null) {
 	          break;
-	        } else if (singleChar == '.') { // si es un punto va la izquierda
-	          currentNode = currentNode.getHijoIzq();
-	        } else {
-	          currentNode = currentNode.getHijoDer(); // va a la derecha 
+	        } else if (caracter == '.') { // si es un punto va la izquierda
+	        	nodoActual = nodoActual.getHijoIzq();
+	        } else { //Si no es punto va a la derecha 
+	        	nodoActual = nodoActual.getHijoDer();
 	        }
 
-	        if (l == morseSymbol.length() - 1) { // si recorrió toda la palabra de signos devuelve la letra
-	          decodedMessage += currentNode.getLlave();
+	        if (l == palabra.length() - 1) { //Agrega la letra deseada al mensaje final cuando llega al ultimo simbolo de la palabra en morse
+	        	mensajeDecodificado += nodoActual.getLlave();
 	        }
 	      }
 	    }
-	    return decodedMessage;
+	    return mensajeDecodificado;
 	  }
 	
-	 /**
-     * decodes a String of English to morse code
-     * @param str String of English
-     * @return result String of morse code
-     * current = actual 
-     */
 
-   
+   /*
+    * codificar() recibe un mensaje normal y lo pasa a morse 
+    * Le borra los espacios al principio y al final y lo pasa a mayusculas 
+    * Guarda los nodos en posOrden en una cola que 
+    * Guarda el equivalente en Morse de cada letra en un array de String 
+    * Recorre cada letra de la oracion, lo pasa a ascci para obtener su numero y lo busca 
+    * 	en el array de Simbolos Morse 
+    * 
+    */
     public String codificar(String mensaje) {
-        mensaje = mensaje.trim().toUpperCase();
-        /*
-         *  El giro postal comienza desde la parte inferior de las ramas de la izquierda hasta el hijo de
-         raíz, luego lo mismo en las ramas de la derecha, luego el propio nodo. Este es
-         el mejor orden para construir nuestros símbolos de código morse basados en el
-         ubicación de cada nodo
-         */
-        Queue<NodoB<E>> nodosTransversales = postOrdenTransversal();
-        String[] simbolosMorse = generarArrayMorse(nodosTransversales);
-        String mensajeCodificado = "";
-
-        for (int k = 0; k < mensaje.length(); k++) {
-          if (mensaje.charAt(k) == ' ') {
+    	
+        mensaje = mensaje.trim().toUpperCase(); // borra los espacios al principio y al final del mensaje y pasa todo a mayusculas
+    	//	para evitar confusion con los separados
+        Queue<NodoB<E>> nodosEnPostOrden = postOrdenNodos();// guarda el postOrden de los nodos
+        String[] simbolosMorse = generarArrayMorse(nodosEnPostOrden);// guarda las equivalencias
+        String mensajeCodificado = "";// para guardar el mensaje
+        for (int k = 0; k < mensaje.length(); k++) {// recorre cada letra del mensaje 
+          if (mensaje.charAt(k) == ' ') { // si es un espacio, guarda un espacio codificado
             mensajeCodificado.trim();
             mensajeCodificado += " ";
-          } else {
+          } else {// si es una letra 
             if (Character.isLetter(mensaje.charAt(k))) {
-              int ascii = (int) mensaje.charAt(k);
+              int ascii = (int) mensaje.charAt(k);// guarda el ascci de esa letra 
+              // va al equivalente en morse del Array, coge su simbolo y le suma un espacio
               mensajeCodificado += simbolosMorse[ascii - 65] + " ";
             }
           }
         }
-        return mensajeCodificado.trim();
+        return mensajeCodificado.trim(); // devuelve el mensaje codificado y le quita los espacios al principio y al final 
       }
-    
-    /**
 
-     *  Crea la matriz de código morse basada en una cola de
-     * {@link MorseCodeNode}s. Crea los símbolos de código morese arrastrándose hacia arriba por la ventana de diálogo
-     *	hasta que encuentre la raíz.
-     * @param nodosTransversales
-     * @return
-     */
     
-  
-    private String[] generarArrayMorse(Queue<NodoB<E>> nodosTransversales) {
+    /*
+     * generarArrayMorse() devuelve un array con el equivalente de cada letra en Morse
+     * Recorre la cola del posOrden, coge el primer nodo e inicia una cola pila para guardar
+     * 	cada codigo morse
+     * Con ese nodo,va al padre, luego al hijo izquierdo, y tiene que ser el mismo nodo para
+     * 	poder ascender de nivel, si asciende por la izquierda es un punto, si es por la 
+     * 		derecha es un -
+     * Si llega a la raiz, coge el nodo en el que va el foreach, lo pasa a ascii, y luego 
+     * 	vacia la pilaSimboloMorse, para guardarla en la posicion ascci del arraySimbolosMorse
+     */
+    private String[] generarArrayMorse(Queue<NodoB<E>> nodosEnPostOrden) {
+    	// Array para guardar el equivalente en Morse de cada letraa
     	String[] arraySimbolosMorse = new String[26];
-      Iterator<NodoB<E>> cola=nodosTransversales.iterator();
-      for (NodoB<E> nodo : nodosTransversales ) {
+      for (NodoB<E> nodo : nodosEnPostOrden ) {// cojo cada nodo para ver su equivalente 
+    	  /*Inicio pila que guarda puntos y guiones hasta la raiz por cada letra */
     	  Stack<Character> pilaSimbolosMorse = new Stack<Character>();
-          NodoB<E> nodoActual =nodo;
-          boolean raizEncontrada = false;
-          Character v=' ';
+          NodoB<E> nodoActual =nodo;// nodoActual es un nodo auxiliar para buscar su padre 
+          boolean raizEncontrada = false; // me indica si llego hasta la raiz
+          Character v=' '; // para comparar el espacio
           if (nodoActual.getLlave().compareTo((E) v )==0) {
-            raizEncontrada = true;
+            raizEncontrada = true; // si el nodoActual es la raiz no entra al while 
           }
-          while (!raizEncontrada) {
-            if (!(nodoActual.getLlave().compareTo((E)v )==0)) {// nodoActual.getLlave().equals("")      nodoActual.getLlave()==""     nodoActual.getPadre()==null    nodoActual.getLlave().compareTo((E) "")==0
+          while (!raizEncontrada) {// si no encuentro la raiz 
+            if (!(nodoActual.getLlave().compareTo((E)v )==0)) { 
+            	/*Si nodoActual es != de vacio, cojo su padre,luego el hijo izquierdo del padre
+            	 * 	y si llego al mismo nodoActual subo por la izquierda y guardo un punto 
+            	 * 		en la pilaSimbolosMorse, sino, guardo un - , cojo el padre y repito 
+            	 * 			hasta llegar a la raiz */
+
 	              if (nodoActual.getPadre().getHijoIzq()!=null && nodoActual.getPadre().getHijoIzq().getLlave().compareTo((E) nodoActual.getLlave())==0) {
 	                pilaSimbolosMorse.push('.');
 	                nodoActual = nodoActual.getPadre();
@@ -183,48 +190,47 @@ public class ArbolB <E extends Comparable <E>> {
 	                pilaSimbolosMorse.push('-');
 	                nodoActual = nodoActual.getPadre();
 	              }          
-            } else {
-              String simboloMorse = "";
-              char alfa = (char) nodo.getLlave();
+            } else {// si llegue a la raiz
+              String simboloMorse = "";// String para guardar lo que devuelva la pila 
+              char alfa = (char) nodo.getLlave();// para guardar el nodoPostOrden y pasarlo a ascci
               raizEncontrada = true;
-              while (!pilaSimbolosMorse.isEmpty()) {
+              while (!pilaSimbolosMorse.isEmpty()) {// vacio la pila y la guardo en un string 
+            	  // me devuelve el simboloMorse de la letra 
                 simboloMorse += pilaSimbolosMorse.pop();
               }
               int ascii = (int) alfa;
+              /*Paso el nodoPostOrden a ascci que me permite tener una posicion en el 
+               * 	arraySimboloMorse
+               *  la letra H es la 65 en codigo ascci, y la primera del postOrden
+               */
               arraySimbolosMorse[ascii - 65] = simboloMorse;
             }
           } 
       }
-      return arraySimbolosMorse;
+      return arraySimbolosMorse; // retorna el array de equivalencias letra-Morse
     }
 
-    /**
-     * Crea una cola de nodos que han estado en cola "post-order". Llamadas
-     * {@link this#postOrderTraversal(MorseCodeNode, Queue)} para continuar con el comando
-     * ordenar de forma recursiva.
-     * @return traversedNodes the nodes post-ordered in a queue.
+    /*
+     * postOrdenNodos() hace el postOrden del arbol y guarda los nodos en una cola 
+     * 	para luego poderlos coger uno a uno 
+     * Guardo los nodos en vez de las llaves porque en generarArrayMorse() necesito el padre
+     * 	y el hijo izquierdo de cada nodo
      */
-    private Queue<NodoB<E>> postOrdenTransversal() {
-      Queue<NodoB<E>> nodosTransversales = new LinkedList<>();
-      nodosTransversales = postOrdenTransversalR(raiz.getHijoIzq(),nodosTransversales);
-      nodosTransversales = postOrdenTransversalR(raiz.getHijoDer(),nodosTransversales);
-      nodosTransversales.add(raiz);
-      return nodosTransversales;
+    private Queue<NodoB<E>> postOrdenNodos() {
+      Queue<NodoB<E>> nodosEnPostOrden = new LinkedList<>();
+      nodosEnPostOrden = postOrdenNodosR(raiz.getHijoIzq(),nodosEnPostOrden);
+      nodosEnPostOrden = postOrdenNodosR(raiz.getHijoDer(),nodosEnPostOrden);
+      nodosEnPostOrden.add(raiz);
+      return nodosEnPostOrden;
     }
 
-    /**
-     * Crea una cola de nodos que han sido encolados "post-order". Convocado por
-     * {@link this#postOrderTraversal()} y a sí mismo recursivamente. 
-     * @param nodo El nodo actual que se está atravesando
-     * @param @return traversedNodes La cola actual de los nodos atravesados
-     */
-    private Queue<NodoB<E>> postOrdenTransversalR(NodoB<E> nodo,Queue<NodoB<E>> nodosTransversales) {
+    private Queue<NodoB<E>> postOrdenNodosR(NodoB<E> nodo,Queue<NodoB<E>> nodosEnPostOrden) {
       if (nodo != null) {
-        nodosTransversales = postOrdenTransversalR(nodo.getHijoIzq(),nodosTransversales);
-        nodosTransversales = postOrdenTransversalR(nodo.getHijoDer(), nodosTransversales);
-        nodosTransversales.add(nodo);
+        nodosEnPostOrden = postOrdenNodosR(nodo.getHijoIzq(),nodosEnPostOrden);
+        nodosEnPostOrden = postOrdenNodosR(nodo.getHijoDer(), nodosEnPostOrden);
+        nodosEnPostOrden.add(nodo);
       }
-      return nodosTransversales;
+      return nodosEnPostOrden;
     }
  
 	public static void main(String[] args) {
@@ -306,11 +312,11 @@ public class ArbolB <E extends Comparable <E>> {
  		n19.setHijoDer(n26);
  		
 		ArbolB<Character> a = new ArbolB<Character>(n0);
+		System.out.println("El postorden es "+a.postOrdenNodos());
 		String mensaje = "...- .- -- --- ...  .-  ... .- -.-. .- .-.  -.-. .. -. -.-. ---" ;
-		System.out.println("de morse a normal= "+a.decode(mensaje));
-		System.out.println(a.postOrdenTransversal());
-		System.out.println("de normal a morse= "+a.codificar("V"));
-		System.out.println("de normal a morse2= "+a.codificar("VAMOS A SACAR CINCO"));
+		System.out.println("De morse a normal= "+a.decodificar(mensaje));
+		System.out.println("V de normal a morse= "+a.codificar("V"));
+		System.out.println("De normal a morse= "+a.codificar("VAMOS A SACAR CINCO"));
 		System.out.println();
 	
 		
